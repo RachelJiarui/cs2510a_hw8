@@ -1,0 +1,91 @@
+DIAGRAM
+
+┌────────────────────┐
+│                    │
+│                    │
+│ SokobanWorld       │
+│                    │
+│                    │
+└────────▲───────────┘
+         │
+         │
+         │
+┌────────┴────────────────┬──────────┐
+│ Level                   │┼┼┼┼┼┼┼┼┼┼┼─────────────┬────────────────────────┐
+├─────────────────────────▼──────────┤             │  IBoardPiece           ◄───┬────────────────┐
+│ ArrayList<ArrayList<IBoardPiece>>  │         ┌───►                        ◄───┤                │
+│ levelContents                      │         │   └─▲─────────▲───────▲────┘   │                │
+│                                    │         │     │         │       │        │                │
+│ ArrayList<ArrayList<IBoardPiece>>  │         │     │         │       │        │                │
+│ levelFloor                         │         │     │         │       │        │                │
+└────────────────────────────────────┘         │     │         │       │        │                │
+                                               │     │         │       │        │                │
+                                               │     │         │       │        │                │
+                                               │     │         │       │        │                │
+                                               │     │         │       │        │                │
+                                     ┌─────────┴───┐ │ ┌───────┴─────┐ │ ┌──────┴──────┐   ┌─────┴───────┐
+                                     │             │ │ │             │ │ │             │   │             │
+                                     │ Player      │ │ │  Target     │ │ │  Trophy     │   │  Wall       │
+                                     │             │ │ │             │ │ │             │   │             │
+                                     │             │ │ │             │ │ │             │   │             │
+                                     └─────────────┘ │ └─────────────┘ │ └─────────────┘   └─────────────┘
+                                                     │                 │
+                                     ┌─────────────┐ │ ┌─────────────┐ │
+                                     │             │ │ │             ├─┘
+                                     │ Box         ├─┘ │  Hole       │
+                                     │             │   │             │
+                                     │             │   │             │
+                                     └─────────────┘   └─────────────┘
+
+DESCRIPTION
+
+IBoardPiece - this is an interface for IBoardPiece. All of the board pieces in the level
+implement it to make sure they each implement necessary methods that can be called on
+a physical element in the game. They serve as the most basic units of our level
+
+	Data that implements IBoardPiece
+
+	Trophy - The Trophy is the board piece that can be
+	moved around by the player witht he goal of matching one up to each target of
+	the same color, allowing the player to win
+
+	Player - The Player is the object that the person playing this Sokoban level
+	physically controls. The actual player can directly move the Player piece
+	given proper conditions
+
+	Wall - The Wall is a board piece which the player cannot walk through
+
+	Target - The Target is the board piece that the player must move the Trophies
+	onto in order to win the game, making it the primary goal
+
+	Box - The Box is a board piece which serves as an obstacle to the player
+	similarly to the wall, although it can be moved (though not in this implementation)
+
+	BlankSpace - The BlankSpace is a board piece which the player can move onto and
+	replace, whereas other board pieces represent physical objects
+
+Level - this class represents our level. Creating a level class allows us to create methods
+that better show the relationship between these two sets of board pieces, as well as makes
+creating the logic of our level easier by allowing methods to be created regarding the interaction
+of different board pieces
+    Within our level, we have two ArrayLists of a row (ArrayList) of board pieces to represent
+    the map. One layer being the floor, which includes data such as a Target and BlankSpace
+    while the other layer being the content on top of the floor, which includes data such as
+    Player, Wall, Box, Trophy and Hole.
+
+Utils - this class' purpose is to house methods that required arguments but didn't need
+to be called on specific objects.
+
+ArrayUtils - this class' purpose is to house methods that modifies or uses ArrayLists as
+arguments.
+
+SokobanWorld - this class extends World, allowing us to run the actual level and enable
+player inputs. Being a game, this is integral, as we wouldn't be ablr to implement methods
+that allow the player to move without it. It uses a level as an input, but since it extends
+World, it can update the level as time goes on.
+
+ExamplesLevel - this class allows us to test methods that we created in our various classes
+to make sure they work.
+
+ExamplesSokobanWorld - this class allows us to store some examples of levels to be played
+in SokobanWorld. It also is where we can call out bigBang method to make the game run.

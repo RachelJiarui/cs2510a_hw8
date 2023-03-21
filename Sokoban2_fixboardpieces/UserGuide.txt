@@ -1,0 +1,28 @@
+SOKOBAN USER GUIDE:
+
+CONTROLS:
+Arrow Keys:
+	- up = if the player can move to the space above, it will move there
+			and the direction of the player will change to face up
+			otherwise only direction changes
+	- down = if the player can move to the space below, it will move there
+			and the direction of the player will change to face down
+			otherwise only direction changes
+	- left = if the player can move to the adjacent left space, it will move there
+			and the direction of the player will change to face left
+			otherwise only direction changes
+	- right = if the player can move to the adjacent right space, it will move there
+			and the direction of the player will change to face right
+			otherwise only direction changes
+
+HOW TO PLAY:
+	- To start, open the files in Eclipse and under Run Configurations, change the
+	  Project to Homework5 and the Progam argument to ExamplesSokobanLevel. Click
+	  Run to play the level
+	- The player can move around and explore the features of the level using the
+	  arrow keys. The player cannot walk through walls, boxes or trophies but may 
+	  stand over blank ground and targets on the floor.
+    - Items can fall into holes and fill the hole, making it vanish from the floor.
+    - If the player falls in a hole, the game will end. The player does not win.
+	- The player wins the game when all the targets are covered with trophies of 
+	  the same color. The game will end if the player wins.

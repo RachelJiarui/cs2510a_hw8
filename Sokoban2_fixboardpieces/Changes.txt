@@ -1,0 +1,54 @@
+CHANGES:
+
+IList -> ArrayLists
+- The generic lists (ConsRow, ConsLevel, MtRow, MtLevel) that were made in the previous 	assignment were changed to be arrayLists.
+	Why: This allowed us to create more specific functions that handled the 2D array
+		of IBoardPieces that we were dealing with
+- The functions that were previously in the IList interface were added to a new class
+	ArrayUtils.
+	Why: Because we cannot add or create function that directly work with arrayLists,
+		creating a function object that handles this allows for us to manipulate our
+		array
+
+
+ArrayUtil
+- Added hasPlayer(AL<AL<IBP> levelContents) to determine whether the board is in a win state
+
+
+Utils
+- Changed swapBoardPieces(...) to replace(Posn player, Posn dest, Posn dir)
+- Added adjacentPosn(Posn old, String dir)
+	Why: This is a helper method that allows us to get the Posn of the adjacent boardpiece in the given direction
+
+
+IBoardPiece
+- Added a new BoardPiece, Hole, which causes other boardpieces and itself to disappear
+	when an object is moved to its position
+- isBlankSpace() method to be isMoveableSpot(). BlankSpaces and Holes are now
+	considered moveableSpots and are used to determine whether an object can be pushed to 
+	its position
+- Added isPushableSpot(). When moving, this helps differentiate between when a player is
+	moving to a blank space or is trying to push an object. Trophies and Boxes are 
+	considered pushableSpots
+- Added isHole() to determine whether the BoardPiece trying to move an adjacent spot should
+	disappear after moving or acti "normally"
+- Added replace(Posn movedPosn, Posn thirdpiece)
+
+
+SokobanWorld
+- Added a checkLevelEnd to the end of our keyEvent()
+- Added checkLevelEnd()
+	Why: This allows us to end the level when the player is consumed by a hole or
+		the level has been won
+- Added lastScene(String msg)
+	Why: This is an end screen message that just displays "End" in red writing when
+		the checkLevelEnd returns true
+
+
+Level
+- movePlayer has been changed to check if the new Position will be out of bounds, 
+	if the new position is a moveable or if the new Position is pushable and the adjacent
+	postion is a moveableSpot.
+- Added hasPlayer() to check if there is still a player on the board
+
+

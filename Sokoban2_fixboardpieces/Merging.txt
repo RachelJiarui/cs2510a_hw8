@@ -1,0 +1,45 @@
+MERGING JAZMYN'S AND RACHEL'S SOKOBAN VERSIONS
+
+COMPARISONS
+Similarities:
+- Had a SokobanWorld which distinguished two layers to a level which
+  separated the board pieces on the floor versus the board pieces on top
+- Had an interface for all the board pieces
+- Checked if a player could move into a board piece or not (if something
+  was blocking the player's way, like a wall)
+
+Differences:
+- Jazmyn's version checked that the two layers to a level had the same
+  dimensions
+- Rachel's version distinguished the two layers to a level within the
+  interface for the board piece, where one board piece had a bottom and 
+  top element while Jazmyn had two lists for the bottom and top
+- Jazmyn utilized function objects over generic lists while Rachel used
+  non-generic lists
+- Jazmyn used Posn to check and find the positions of board pieces while
+  Rachel did not
+
+IMPLEMENTATION
+Keepers:
+- Keep interface and data design for board pieces
+- Keep Jazmyn's use of Posn. This element will be extremely helpful as it 
+  allows for quick identification of board pieces at a specific location
+  which can help us with more complicated player movement involving the
+  movement of blocks
+- Keep Jazmyn's checks to verifying if a SokobanWorld is valid or not
+- Keep Jazmyn and Rachel's idea of separating floor and on top of floor 
+  board piece logic
+- Keep player movement, onKeyEvent
+- Keep Sokoban FunWorld
+
+Discarded:
+- Bye bye to generic lists and function objects
+- Since we're using Jazmyn's implementation of board pieces, throw out
+  Rachel's version of board piece where each board piece has a top
+  and bottom piece
+
+FUTURE PLANS
+The biggest change lies in the implementation of ArrayLists. This means:
+- Removing all generic lists and replacing them with ArrayLists
+- Creating an ArrayUtils class to do all the functions that used to be
+  implemented in ConsList and MtList
