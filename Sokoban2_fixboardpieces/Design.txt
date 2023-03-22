@@ -39,30 +39,49 @@ DIAGRAM
 
 DESCRIPTION
 
-IBoardPiece - this is an interface for IBoardPiece. All of the board pieces in the level
-implement it to make sure they each implement necessary methods that can be called on
-a physical element in the game. They serve as the most basic units of our level
+IContentPiece - this is an interface that is implemented by all of the level contents to
+make sure that each ContentPiece implements the necessary methods that can be called on
+a physical element in the game
 
-	Data that implements IBoardPiece
-
-	Trophy - The Trophy is the board piece that can be
-	moved around by the player witht he goal of matching one up to each target of
+	Data that implements IContentPiece
+	
+	Trophy - The Trophy is the content piece that can be
+	moved around by the player witt he goal of matching one up to each target of
 	the same color, allowing the player to win
 
 	Player - The Player is the object that the person playing this Sokoban level
 	physically controls. The actual player can directly move the Player piece
 	given proper conditions
 
-	Wall - The Wall is a board piece which the player cannot walk through
+	Wall - The Wall is a content piece which the player cannot walk through
 
-	Target - The Target is the board piece that the player must move the Trophies
-	onto in order to win the game, making it the primary goal
-
-	Box - The Box is a board piece which serves as an obstacle to the player
+	Box - The Box is a content piece which serves as an obstacle to the player
 	similarly to the wall, although it can be moved (though not in this implementation)
 
-	BlankSpace - The BlankSpace is a board piece which the player can move onto and
+	BlankSpace - The BlankSpace is a content piece which the player can move onto and
 	replace, whereas other board pieces represent physical objects
+	
+	Hole - The Hole is a content piece which causes a player or a pushable item item to disappear
+	upon being stepped on. The hole also disappears when an content piece steps atop it.
+
+IFloorPiece - this is an interface that is implemented by all of the level floor elements.
+Each FloorPiece implements this to make sure they each implement necessary methods that can be called on
+a physical element in the game.
+
+	Data that implements IFloorPiece
+
+	Target - The Target is the floor piece that the player must move the Trophies
+	onto in order to win the game, making it the primary goal
+
+	IceBlock - The IceBlock the floor piece that will cause a player or pushableItem to
+	slide until it is no longer on ice. If an object is on an IceBlock at the beginning of a round,
+	it is stationary. However, if a player pushes the item, it will slide.
+
+	BlankSpace - The BlankSpace is a floor piece which the player can move onto and
+	replace, whereas other board pieces represent physical objects
+
+ABoardPiece - this class allows us to abstract the methods and parameters that IContentPieces and
+IFloorPieces have in common. This allows us
 
 Level - this class represents our level. Creating a level class allows us to create methods
 that better show the relationship between these two sets of board pieces, as well as makes

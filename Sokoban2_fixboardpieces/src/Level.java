@@ -114,47 +114,9 @@ class Level {
     return new ArrayUtils().getContentPieceAt(posn, this.levelContents).isMoveableSpot();
   }
 
-  // Returns the position of the end of the ice slide in a given a starting position
-  // and a direction
-  public Posn getEndOfIceSlide(Posn start, String dir) {
-    int X_LIMIT = this.levelContents.size();
-    int Y_LIMIT = this.levelContents.get(0).size();
-
-    if (dir.equals(">")) {
-      Posn examinePos = new Posn(start.x, start.y + 1);
-      while(new ArrayUtils().getFloorPieceAt(examinePos, this.levelFloor).isIce()
-          && examinePos.y < Y_LIMIT) {
-        examinePos = new Posn(examinePos.x, examinePos.y + 1);
-      }
-      return examinePos;
-    } else if (dir.equals("^")) {
-      Posn examinePos = new Posn(start.x - 1, start.y);
-      while(new ArrayUtils().getFloorPieceAt(examinePos, this.levelFloor).isIce()
-          && examinePos.x > 0) {
-        examinePos = new Posn(examinePos.x, examinePos.y + 1);
-      }
-      return examinePos;
-    } else if (dir.equals("v")) {
-      Posn examinePos = new Posn(start.x + 1, start.y);
-      while(new ArrayUtils().getFloorPieceAt(examinePos, this.levelFloor).isIce()
-          && examinePos.x < X_LIMIT) {
-        examinePos = new Posn(examinePos.x, examinePos.y + 1);
-      }
-      return examinePos;
-    } else if (dir.equals("<")) {
-      Posn examinePos = new Posn(start.x, start.y - 1);
-      while(new ArrayUtils().getFloorPieceAt(examinePos, this.levelFloor).isIce()
-          && examinePos.y > 0) {
-        examinePos = new Posn(examinePos.x, examinePos.y + 1);
-      }
-      return examinePos;
-    }
-
-    throw new RuntimeException("Direction given is invalid");
-  }
-
   // moves the player in this level
   public int movePlayer(IContentPiece player, Posn dest, String dir) {
+
     Posn movedPosn = new Utils().adjacentPosn(dest, dir);
 
     // if the player is trying to move off the screen, just change the icon but
@@ -165,109 +127,197 @@ class Level {
       return 0;
     }
 
+
     // find more information about the destination piece
     IContentPiece destPiece = new ArrayUtils().getContentPieceAt(dest, this.levelContents);
     IFloorPiece floorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, player.getPosn());
     IFloorPiece destFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, dest);
     IContentPiece thirdPiece = new ArrayUtils().getContentPieceAt(movedPosn, this.levelContents);
 
+
+    // if player standing on ice and next is ice, we want player to see if it can move
+    // if player is NOT standing on ice but next to it is ice, we want to see if player can move
     if ((floorPiece.isIce() && destFloorPiece.isIce()) || (!floorPiece.isIce() && destFloorPiece.isIce())) {
+      
+      // if next spot is empty of content
       if (destPiece.isMoveableSpot()) {
+        
+        // if next spot is a hole
         if (destPiece.isHole()) {
+
+          // player fills the hole
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(dest));
+
+        // if next spot is not a hole
         } else {
+
+          // move player to next spot
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
           this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
-        }
-      }
-      else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
 
+        }
+
+      // if next spot has something pushable (box/trophy) and the spot next to that object is empty
+      // and we're on ice or that object is on ice
+      } else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
+
+        // move the moveable object to the next next spot, which is open
+        // this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
+        this.levelContents = this.moveObject(destPiece, dir);
+
+        // move the player to the next spot
         this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
         this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
 
-        this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
-      }
-      else {
-        this.changePlayerIcon(player.getPosn(), dir);
-      }
-      Player movedPlayer = new Player(dir, dest);
 
-      return this.movePlayer(movedPlayer, movedPosn, dir);
+      // if the next spot doesn't have anything pushable and it's not empty (wall)
+      } else {
 
-    } else {
-      if (destPiece.isMoveableSpot()) {
-        if (destPiece.isHole()) {
-          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
-          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(dest));
-        } else {
-          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
-          this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
-        }
-        return 1;
-      }
-      else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
-        
-        
-        this.moveObject(destPiece, dir);
-        destPiece = new ArrayUtils().getContentPieceAt(dest, this.levelContents);
-        
-        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
-        
-        
-        this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
-        
-        this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
-
-        return 1;
-      }
-      else {
+        // just change icon
         this.changePlayerIcon(player.getPosn(), dir);
         return 0;
+
       }
+
+      // after all the checking, we want to keep moving the player because we're on ice
+      // this is the representation of the player with information on its new position
+      Player movedPlayer = new Player(dir, dest);
+
+      // call recursively to keep moving this player BECAUSE it is on ice! we want to keep checking
+      // if the follow things are on ice, if there are objects in the way, etc.
+      return this.movePlayer(movedPlayer, movedPosn, dir);
+
+    // if we're not on ice and there is no ice in the direction we're moving
+    } else {
+
+      // if the next spot is no ice and there's no object there
+      if (destPiece.isMoveableSpot()) {
+        
+        // if the next spot is a hole
+        if (destPiece.isHole()) {
+
+          // fill the hole with the player
+          this.levelContents = new Utils().replaceContent(this.levelContents, 
+              new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents,
+              new BlankSpace(dest));
+
+        // if the next spot is NOT a hole, its a blank space
+        } else {
+
+          // move the player jut one spot
+          this.levelContents = new Utils().replaceContent(this.levelContents,
+              new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents,
+              new Player(dir, dest));
+
+        }
+
+        return 1;
+        
+      // if the next spot has no ice but there's something we can push, with the third space being a moveable spot
+      // for the object to go to (might be a hole)
+      } else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
+
+        // have the moveObject function handle the object's movement in the direction we're going
+        // this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
+        this.levelContents = this.moveObject(destPiece, dir);
+
+        // move the player to the place where there's the object
+        this.levelContents = new Utils().replaceContent(this.levelContents,
+            new BlankSpace(player.getPosn()));
+        this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
+
+        return 1;
+
+      }
+
+      // if the next spot is NOT open and does NOT have ice (wall)
+      else {
+
+        // change the way the player is facing
+        this.changePlayerIcon(player.getPosn(), dir);
+        return 0;
+
+      }
+
     }
+
   }
 
-  void moveObject(IContentPiece curPiece, String dir) {
+
+  ArrayList<ArrayList<IContentPiece>> moveObject(IContentPiece curPiece, String dir) {
+
     Posn movedPosn = new Utils().adjacentPosn(curPiece.getPosn(), dir);
     Posn thirdPosn = new Utils().adjacentPosn(movedPosn, dir);
 
-    // if the player is trying to move off the screen, just change the icon but
-    // don't move user
-    if (movedPosn.x >= this.levelFloor.size() || movedPosn.x < 0
-        || movedPosn.y >= this.levelFloor.get(0).size() || movedPosn.y < 0) {
-      return;
-    }
 
-    
     IFloorPiece destFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(this.levelFloor, movedPosn);
     IFloorPiece curFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, curPiece.getPosn());
     IContentPiece nextPiece = new ArrayUtils().getContentPieceAt(movedPosn, this.levelContents);
     IContentPiece thirdPiece = new ArrayUtils().getContentPieceAt(thirdPosn, this.levelContents);
 
+   
 
-    if(curFloorPiece.isIce() || destFloorPiece.isIce()) {
+    // if this object is not standing on ice, but the next spot is ice
+    // we want the object to move but not replace the thing behind it as blank space
+    // because that's where the player is going to move
+    if(!curFloorPiece.isIce() && destFloorPiece.isIce() || curFloorPiece.isIce() && destFloorPiece.isIce()) {
+
+      // if the next place has no object standing in it's way
       if (nextPiece.isMoveableSpot()) {
+
+        // if the next place is a hole
         if (nextPiece.isHole()) {
+
+          // replace the hole with the object, changing that destination place into a blank space
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(movedPosn));
+
+        // if the next place is not a hole, and the object is on ice or going on ice
         } else {
-          IContentPiece movedCurPiece = curPiece.newContentPiece(movedPosn);
+
+          // move the object to the destination place and call move object recursively
           this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+
+          IContentPiece movedCurPiece = curPiece.newContentPiece(movedPosn);
           this.levelContents = new Utils().replaceContent(this.levelContents, movedCurPiece);
-          this.moveObject(movedCurPiece, dir);
+          this.levelContents = this.moveObject(movedCurPiece, dir);
+
         }
+
       }
 
-    } else if (nextPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
-      
-      this.moveObject(nextPiece, dir);
-      
-      this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
-      this.levelContents = new Utils().replaceContent(this.levelContents, curPiece.newContentPiece(movedPosn));
+      // if there's an object standing its way, nothing should change
+      return this.levelContents;
+   
+
+    // if this object is standing on ice, and the next spot is ice, we want the object to keep
+    // sliding. also we'd like the object before it to be replaced by a blank space (what if the player and ice
+    // start on the ice together)
+
+    } else if (nextPiece.isMoveableSpot()) {
+
+      if (nextPiece.isHole()) {
+
+        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(movedPosn));
+
+      } else {
+
+        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+        IContentPiece movedCurPiece = curPiece.newContentPiece(movedPosn);
+        this.levelContents = new Utils().replaceContent(this.levelContents, movedCurPiece);
+
+      }
+
     }
 
+    return this.levelContents;
+
   }
+
 
   // changes the player icon to the direction given
   public void changePlayerIcon(Posn posn, String dir) {

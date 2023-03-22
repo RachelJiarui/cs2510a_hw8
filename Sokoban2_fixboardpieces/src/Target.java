@@ -74,13 +74,6 @@ class Target extends ABoardPiece implements IFloorPiece {
     return false;
   }
 
-  // returns an updated arraylist
-  public ArrayList<ArrayList<IBoardPiece>> replace(ArrayList<ArrayList<IBoardPiece>> levelContents,
-      Posn movedPosn, IBoardPiece thirdpiece) {
-    // TODO Auto-generated method stub
-    return levelContents;
-  }
-
   // determines if this is a hole
   public boolean isHole() {
     return false;

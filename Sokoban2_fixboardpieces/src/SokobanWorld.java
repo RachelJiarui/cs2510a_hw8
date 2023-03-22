@@ -208,8 +208,8 @@ class ExamplesSokobanWorld {
   boolean testLastScene(Tester t) {
     WorldScene background = new WorldScene(world3.screenWidth, world3.screenHeight);
     WorldScene endScene = background.placeImageXY(new TextImage("END", 40, Color.red),
-        world3.screenWidth / 2, world3.screenHeight / 2);
-
+        world3. / 2, world3.screenHeight / 2);
+screenWidth
     return t.checkExpect(world3.lastScene("END"), endScene);
   }
 

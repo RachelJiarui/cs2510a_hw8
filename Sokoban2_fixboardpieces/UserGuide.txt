@@ -17,12 +17,21 @@ Arrow Keys:
 
 HOW TO PLAY:
 	- To start, open the files in Eclipse and under Run Configurations, change the
-	  Project to Homework5 and the Progam argument to ExamplesSokobanLevel. Click
-	  Run to play the level
+	  Project to Homework5 and the Program argument to ExamplesSokobanLevel. Click
+	  Run to play the level.
 	- The player can move around and explore the features of the level using the
 	  arrow keys. The player cannot walk through walls, boxes or trophies but may 
 	  stand over blank ground and targets on the floor.
+	- The player can push singular boxes and trophies but cannot push more than one
+	  item at a time.
     - Items can fall into holes and fill the hole, making it vanish from the floor.
     - If the player falls in a hole, the game will end. The player does not win.
+    - If a player steps onto floor that has an IceBlock, the player will slide in the
+      direction they were moved until there is no longer ice, until there is a wall,
+      or until there is more than one item in the direction of the player's movement
+    - If a player pushes an item onto Ice, the will slide in the direction they player
+      pushed it until there is no longer ice, until there is a wall, or until there is
+      an item in the way
 	- The player wins the game when all the targets are covered with trophies of 
 	  the same color. The game will end if the player wins.
+	  
