@@ -36,4 +36,7 @@ interface IContentPiece {
   
   // Produces a copy of the piece
   IContentPiece copyContentPiece();
+
+  IContentPiece newContentPiece(Posn movedPosn);
+
 }

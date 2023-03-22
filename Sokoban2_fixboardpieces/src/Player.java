@@ -72,4 +72,9 @@ class Player extends ABoardPiece implements IContentPiece {
   public IContentPiece copyContentPiece() {
     return new Player(this.direction, new Posn(this.posn.x, this.posn.y));
   }
+
+  @Override
+  public IContentPiece newContentPiece(Posn movedPosn) {
+    return new Player(this.direction, movedPosn);
+  }
 }

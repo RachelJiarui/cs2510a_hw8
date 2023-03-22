@@ -4,8 +4,13 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import javalib.funworld.*;
+import javalib.worldimages.AboveImage;
+import javalib.worldimages.OutlineMode;
+import javalib.worldimages.OverlayImage;
 import javalib.worldimages.Posn;
+import javalib.worldimages.RectangleImage;
 import javalib.worldimages.TextImage;
+import javalib.worldimages.WorldImage;
 
 // Represents a World that plays a level of Sokoban with a level, screen width and
 // screen height values
@@ -14,6 +19,7 @@ class SokobanWorld extends javalib.funworld.World {
   Level level;
   int screenWidth;
   int screenHeight;
+  int numSteps;
   ArrayList<Level> prevLevels;
 
   // A constructor for a SokobanWorld that takes in a level and decides the
@@ -23,6 +29,7 @@ class SokobanWorld extends javalib.funworld.World {
     this.level = level;
     this.screenWidth = level.width;
     this.screenHeight = level.height;
+    this.numSteps = 0;
     Level firstCopy = new Level(level);
     this.prevLevels = new ArrayList<>();
     prevLevels.add(firstCopy);
@@ -42,8 +49,15 @@ class SokobanWorld extends javalib.funworld.World {
     /*
      * Template: Contains everything from the class template
      */
-    return new WorldScene(this.level.width, this.level.height).placeImageXY(this.level.draw(),
-        this.level.width / 2, this.level.height / 2);
+
+    WorldImage textBox = new RectangleImage(this.level.width, 20, OutlineMode.SOLID, Color.white);
+    textBox =  new OverlayImage(new TextImage("Steps: " + this.numSteps, 20,Color.black),
+        textBox);
+
+    WorldImage drawnLevel = new AboveImage(textBox, this.level.draw());
+
+    return new WorldScene(this.level.width, this.level.height + 20).placeImageXY(
+        drawnLevel, this.level.width / 2, (this.level.height + 20) / 2);
   }
 
   // Changes the SokobanWorld based on key inputs. If a player board piece tries
@@ -55,30 +69,32 @@ class SokobanWorld extends javalib.funworld.World {
   // possibly changing the player sprite
   public SokobanWorld onKeyEvent(String key) {
 
+    int stepCount = 0;
+
     // MOVING PLAYER
     if (key.equals("up")) {
-      this.level.movePlayer(this.level.getPlayer(),
+      stepCount = this.level.movePlayer(this.level.getPlayer(),
           new Posn(this.level.findPlayerPosn().x - 1, this.level.findPlayerPosn().y), "^");
-    }
-    if (key.equals("left")) {
-      this.level.movePlayer(this.level.getPlayer(),
+    } else if (key.equals("left")) {
+      stepCount = this.level.movePlayer(this.level.getPlayer(),
           new Posn(this.level.findPlayerPosn().x, this.level.findPlayerPosn().y - 1), "<");
 
-    }
-    if (key.equals("down")) {
-      this.level.movePlayer(this.level.getPlayer(),
+    } else if (key.equals("down")) {
+      stepCount = this.level.movePlayer(this.level.getPlayer(),
           new Posn(this.level.findPlayerPosn().x + 1, this.level.findPlayerPosn().y), "v");
 
-    }
-    if (key.equals("right")) {
-      this.level.movePlayer(this.level.getPlayer(),
+    } else if (key.equals("right")) {
+      stepCount = this.level.movePlayer(this.level.getPlayer(),
           new Posn(this.level.findPlayerPosn().x, this.level.findPlayerPosn().y + 1), ">");
     }
 
+    this.numSteps += stepCount;
+    
     // UNDO FEATURE
     if (key.equals("u")) {
       if (this.prevLevels.size() > 1) {
         System.out.println("UNDO BEING HIT!");
+        this.numSteps -= 1;
         // gets the last element in prev levels list
         this.level = new Level(this.prevLevels.get(this.prevLevels.size() - 2));
         // removes the last previous level because it's become our current level
@@ -87,10 +103,13 @@ class SokobanWorld extends javalib.funworld.World {
       // else don't do anything, level remains the same and nothing is added to
       // previous levels
     } else {
-      Level copyLevel = new Level(this.level);
-      this.prevLevels.add(copyLevel);
+      if (stepCount == 1) {
+        Level copyLevel = new Level(this.level);
+        this.prevLevels.add(copyLevel);
+      }
     }
-    
+
+
     System.out.println("Length: " + this.prevLevels.size());
 
     World checkEnd = this.checkLevelEnd();
@@ -127,18 +146,18 @@ class SokobanWorld extends javalib.funworld.World {
 class ExamplesSokobanWorld {
   Level level1 = new Level(
       "________\n" +
-      "___R____\n" +
-      "________\n" +
-      "_B____Y_\n" +
-      "________\n" +
-      "___G____\n" +
-      "________",
-      "__WWW___\n" +
-      "__W_WW__\n" +
-      "WWWr_WWW\n" +
-      "W_b>yB_W\n" +
-      "WW_gWWWW\n" +
-      "_WW_W___\n" +
+          "___R____\n" +
+          "________\n" +
+          "_B____Y_\n" +
+          "________\n" +
+          "___G____\n" +
+          "________",
+          "__WWW___\n" +
+              "__W_WW__\n" +
+              "WWWr_WWW\n" +
+              "W_b>yB_W\n" +
+              "WW_gWWWW\n" +
+              "_WW_W___\n" +
       "__WWW___");
 
   Level level2 = new Level(
@@ -159,6 +178,16 @@ class ExamplesSokobanWorld {
       "_______\n" + "___Y___\n" + "_______\n" + "_G_____\n" + "_______\n" + "___R___\n" + "_______",
       "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g>BhW\n" + "W__r__W\n" + "W_____W\n"
           + "WWWWWWW");
+  
+  Level levelWithDoubleIce = new Level(
+      "_________\n"
+      + "___ii__B_\n"
+      + "_________",
+      "WWWWWWWWW\n"
+      + "W>b__W__W\n"
+      + "WWWWWWWWW");
+      
+  
 
   SokobanWorld world1 = new SokobanWorld(level1);
   SokobanWorld world2 = new SokobanWorld(level2);
@@ -167,9 +196,10 @@ class ExamplesSokobanWorld {
   SokobanWorld world5 = new SokobanWorld(level5);
   SokobanWorld world6 = new SokobanWorld(level6);
   SokobanWorld worldHole = new SokobanWorld(levelWithHole);
+  SokobanWorld worldIce = new SokobanWorld(levelWithDoubleIce);
 
   boolean testSokobanWorld(Tester t) {
-    return world1.bigBang(world1.screenWidth, world1.screenHeight, 0.1);
+    return worldIce.bigBang(worldIce.screenWidth, worldIce.screenHeight, 0.1);
   }
 
   /*
@@ -197,5 +227,5 @@ class ExamplesSokobanWorld {
   boolean testChecKLevelEndHasPlayer(Tester t) {
     return t.checkExpect(world2.checkLevelEnd(), world2);
   }
-  */
+   */
 }

@@ -90,4 +90,9 @@ class Target extends ABoardPiece implements IFloorPiece {
   public IFloorPiece copyFloorPiece() {
     return new Target(this.color, new Posn(this.posn.x, this.posn.y));
   }
+
+
+  public boolean isIce() {
+    return false;
+  }
 }

@@ -122,6 +122,9 @@ class Utils {
         || first.equals("Y") || first.equals("R")) {
       return new Target(first, new Posn(x, y));
     }
+    if (first.equals("i")) {
+      return new IceBlock(new Posn(x, y));
+    }
     System.out.println("Floor piece wrong: " + first);
     throw new RuntimeException("No appropriate character to build piece");
   }

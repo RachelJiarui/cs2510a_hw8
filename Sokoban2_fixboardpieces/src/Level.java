@@ -50,12 +50,12 @@ class Level {
     this(new Utils().toFloorLevel(stringLevelFloor, 0, 0),
         new Utils().toContentLevel(stringLevelContents, 0, 0));
   }
-  
+
   // A constructor which copies the level given
   Level(Level reference) {
     this.width = reference.width;
     this.height = reference.height;
-    
+
     // copy level floor
     ArrayList<ArrayList<IFloorPiece>> copyFloor = new ArrayList<>();
     for (ArrayList<IFloorPiece> row : reference.levelFloor) {
@@ -67,7 +67,7 @@ class Level {
       copyFloor.add(copyFloorRow);
     }
     this.levelFloor = copyFloor;
-    
+
     // copy content floor
     ArrayList<ArrayList<IContentPiece>> copyContent = new ArrayList<>();
     for (ArrayList<IContentPiece> row : reference.levelContents) {
@@ -102,7 +102,7 @@ class Level {
 
     return new ArrayUtils().findPlayer(this.levelContents);
   }
-  
+
   // Returns the player on the level
   public IContentPiece getPlayer() {
     return new ArrayUtils().getPlayer(this.levelContents);
@@ -113,13 +113,13 @@ class Level {
   public boolean isMoveableSpot(Posn posn) {
     return new ArrayUtils().getContentPieceAt(posn, this.levelContents).isMoveableSpot();
   }
-  
+
   // Returns the position of the end of the ice slide in a given a starting position
   // and a direction
   public Posn getEndOfIceSlide(Posn start, String dir) {
     int X_LIMIT = this.levelContents.size();
     int Y_LIMIT = this.levelContents.get(0).size();
-    
+
     if (dir.equals(">")) {
       Posn examinePos = new Posn(start.x, start.y + 1);
       while(new ArrayUtils().getFloorPieceAt(examinePos, this.levelFloor).isIce()
@@ -149,12 +149,12 @@ class Level {
       }
       return examinePos;
     }
-    
+
     throw new RuntimeException("Direction given is invalid");
   }
 
   // moves the player in this level
-  public void movePlayer(IContentPiece player, Posn dest, String dir) {
+  public int movePlayer(IContentPiece player, Posn dest, String dir) {
     Posn movedPosn = new Utils().adjacentPosn(dest, dir);
 
     // if the player is trying to move off the screen, just change the icon but
@@ -162,34 +162,111 @@ class Level {
     if (movedPosn.x >= this.levelFloor.size() || movedPosn.x < 0
         || movedPosn.y >= this.levelFloor.get(0).size() || movedPosn.y < 0) {
       this.changePlayerIcon(player.getPosn(), dir);
-      return;
+      return 0;
     }
 
     // find more information about the destination piece
     IContentPiece destPiece = new ArrayUtils().getContentPieceAt(dest, this.levelContents);
     IFloorPiece floorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, player.getPosn());
+    IFloorPiece destFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, dest);
     IContentPiece thirdPiece = new ArrayUtils().getContentPieceAt(movedPosn, this.levelContents);
 
-    if (destPiece.isMoveableSpot()) {
-      if (destPiece.isHole()) {
-        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
-        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(dest));
-      } else {
+    if ((floorPiece.isIce() && destFloorPiece.isIce()) || (!floorPiece.isIce() && destFloorPiece.isIce())) {
+      if (destPiece.isMoveableSpot()) {
+        if (destPiece.isHole()) {
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(dest));
+        } else {
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
+        }
+      }
+      else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
+
         this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
         this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
+
+        this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
+      }
+      else {
+        this.changePlayerIcon(player.getPosn(), dir);
+      }
+      Player movedPlayer = new Player(dir, dest);
+
+      return this.movePlayer(movedPlayer, movedPosn, dir);
+
+    } else {
+      if (destPiece.isMoveableSpot()) {
+        if (destPiece.isHole()) {
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(dest));
+        } else {
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
+        }
+        return 1;
+      }
+      else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
+        
+        
+        this.moveObject(destPiece, dir);
+        destPiece = new ArrayUtils().getContentPieceAt(dest, this.levelContents);
+        
+        this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
+        
+        
+        this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
+        
+        this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
+
+        return 1;
+      }
+      else {
+        this.changePlayerIcon(player.getPosn(), dir);
+        return 0;
+      }
+    }
+  }
+
+  void moveObject(IContentPiece curPiece, String dir) {
+    Posn movedPosn = new Utils().adjacentPosn(curPiece.getPosn(), dir);
+    Posn thirdPosn = new Utils().adjacentPosn(movedPosn, dir);
+
+    // if the player is trying to move off the screen, just change the icon but
+    // don't move user
+    if (movedPosn.x >= this.levelFloor.size() || movedPosn.x < 0
+        || movedPosn.y >= this.levelFloor.get(0).size() || movedPosn.y < 0) {
+      return;
+    }
+
+    
+    IFloorPiece destFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(this.levelFloor, movedPosn);
+    IFloorPiece curFloorPiece = new ArrayUtils().getCorrespondingFloorPiece(levelFloor, curPiece.getPosn());
+    IContentPiece nextPiece = new ArrayUtils().getContentPieceAt(movedPosn, this.levelContents);
+    IContentPiece thirdPiece = new ArrayUtils().getContentPieceAt(thirdPosn, this.levelContents);
+
+
+    if(curFloorPiece.isIce() || destFloorPiece.isIce()) {
+      if (nextPiece.isMoveableSpot()) {
+        if (nextPiece.isHole()) {
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(movedPosn));
+        } else {
+          IContentPiece movedCurPiece = curPiece.newContentPiece(movedPosn);
+          this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+          this.levelContents = new Utils().replaceContent(this.levelContents, movedCurPiece);
+          this.moveObject(movedCurPiece, dir);
+        }
       }
 
+    } else if (nextPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
+      
+      this.moveObject(nextPiece, dir);
+      
+      this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(curPiece.getPosn()));
+      this.levelContents = new Utils().replaceContent(this.levelContents, curPiece.newContentPiece(movedPosn));
     }
-    else if (destPiece.isPushableSpot() && thirdPiece.isMoveableSpot()) {
 
-      this.levelContents = new Utils().replaceContent(this.levelContents, new BlankSpace(player.getPosn()));
-      this.levelContents = new Utils().replaceContent(this.levelContents, new Player(dir, dest));
-
-      this.levelContents = destPiece.replace(this.levelContents, movedPosn, thirdPiece);
-    }
-    else {
-      this.changePlayerIcon(player.getPosn(), dir);
-    }
   }
 
   // changes the player icon to the direction given
@@ -200,9 +277,7 @@ class Level {
   // checks if this level has a player
 
   public boolean hasPlayer() {
-
     return new ArrayUtils().hasPlayer(this.levelContents);
-
   }
 }
 
@@ -215,8 +290,8 @@ class ExamplesLevel {
     this.smallLevel = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g>b_W\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g>b_W\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
   }
 
   boolean testMovePlayerRight(Tester t) {
@@ -226,8 +301,8 @@ class ExamplesLevel {
     Level smallLevelMovedRight = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_>bW\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_>bW\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
 
     this.smallLevel.movePlayer(new Posn(3, 3), new Posn(3, 4), ">");
     return t.checkExpect(smallLevel.levelContents, smallLevelMovedRight.levelContents);
@@ -241,8 +316,8 @@ class ExamplesLevel {
     Level smallLevelMovedLeft = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "Wg<_b_W\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "Wg<_b_W\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
 
     this.smallLevel.movePlayer(new Posn(3, 3), new Posn(3, 2), "<");
     return t.checkExpect(smallLevel.levelContents, smallLevelMovedLeft.levelContents);
@@ -256,8 +331,8 @@ class ExamplesLevel {
     Level smallLevelMovedUp = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W__y__W\n" + "W__^__W\n" + "W_g_b_W\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W__y__W\n" + "W__^__W\n" + "W_g_b_W\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
 
     this.smallLevel.movePlayer(new Posn(3, 3), new Posn(2, 3), "^");
     return t.checkExpect(smallLevel.levelContents, smallLevelMovedUp.levelContents);
@@ -271,8 +346,8 @@ class ExamplesLevel {
     Level smallLevelMovedDown = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_b_W\n" + "W__v__W\n" + "W__r__W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_b_W\n" + "W__v__W\n" + "W__r__W\n"
+                + "WWWWWWW");
 
     this.smallLevel.movePlayer(new Posn(3, 3), new Posn(4, 3), "v");
     return t.checkExpect(smallLevel.levelContents, smallLevelMovedDown.levelContents);
@@ -283,14 +358,14 @@ class ExamplesLevel {
     Level levelWithHole = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g>bhW\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g>bhW\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
 
     Level levelWithHoleRight = new Level(
         "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n" + "_______\n"
             + "_______",
-        "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_>_W\n" + "W__r__W\n" + "W_____W\n"
-            + "WWWWWWW");
+            "WWWWWWW\n" + "W_____W\n" + "W__y__W\n" + "W_g_>_W\n" + "W__r__W\n" + "W_____W\n"
+                + "WWWWWWW");
 
     levelWithHole.movePlayer(new Posn(3, 3), new Posn(3, 4), ">");
     return t.checkExpect(levelWithHole.levelContents, levelWithHoleRight.levelContents);

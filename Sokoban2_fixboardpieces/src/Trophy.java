@@ -86,4 +86,9 @@ class Trophy extends ABoardPiece implements IContentPiece {
   public IContentPiece copyContentPiece() {
     return new Trophy(this.color, new Posn(this.posn.x, this.posn.y));
   }
+
+  @Override
+  public IContentPiece newContentPiece(Posn movedPosn) {
+    return new Trophy(this.color, movedPosn);
+  }
 }

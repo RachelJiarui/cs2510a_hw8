@@ -63,4 +63,14 @@ class BlankSpace extends ABoardPiece implements IFloorPiece, IContentPiece {
   public IContentPiece copyContentPiece() {
     return new BlankSpace(new Posn(this.posn.x, this.posn.y));
   }
+
+  public boolean isIce() {
+
+    return false;
+  }
+  
+  public IContentPiece newContentPiece(Posn movedPosn) {
+    return new BlankSpace(movedPosn);
+  }
+  
 }

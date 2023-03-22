@@ -64,4 +64,8 @@ class Box extends ABoardPiece implements IContentPiece {
   public IContentPiece copyContentPiece() {
     return new Box(new Posn(this.posn.x, this.posn.y));
   }
+
+  public IContentPiece newContentPiece(Posn movedPosn) {
+    return new Box(movedPosn);
+  }
 }

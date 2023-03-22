@@ -138,6 +138,18 @@ class ArrayUtils {
     }
     throw new RuntimeException("No corresponding floor piece");
   }
+
+  public IContentPiece getCorrespondingContentPiece(ArrayList<ArrayList<IContentPiece>> levelContent,
+      Posn posn) {
+    for (ArrayList<IContentPiece> row : levelContent) {
+      for (IContentPiece item : row) {
+        if (item.getPosn().equals(posn)) {
+          return item;
+        }
+      }
+    }
+    throw new RuntimeException("No corresponding floor piece");
+  }
 }
 
 class ExamplesArrayUtils {

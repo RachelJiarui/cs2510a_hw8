@@ -7,7 +7,7 @@ class IceBlock extends ABoardPiece implements IFloorPiece {
   
   // draws the piece
   public WorldImage draw() {
-    return new FromFileImage("iceblock.png");
+    return new FromFileImage("ice.png");
   }
   
   // gets Posn
@@ -18,5 +18,10 @@ class IceBlock extends ABoardPiece implements IFloorPiece {
   // copies this Iceblock
   public IFloorPiece copyFloorPiece() {
     return new IceBlock(new Posn(this.posn.x, this.posn.y));
+  }
+
+
+  public boolean isIce() {
+    return true;
   }
 }

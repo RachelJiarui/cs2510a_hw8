@@ -18,6 +18,8 @@ interface IFloorPiece {
   
   // Produces a copy of this piece
   IFloorPiece copyFloorPiece();
+
+  boolean isIce();
   
   // Determines if this is ice
 }

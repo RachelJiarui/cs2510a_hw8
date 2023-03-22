@@ -60,4 +60,8 @@ class Wall extends ABoardPiece implements IContentPiece {
   public IContentPiece copyContentPiece() {
     return new Wall(new Posn(this.posn.x, this.posn.y));
   }
+
+  public IContentPiece newContentPiece(Posn movedPosn) {
+    return new Hole(new Posn(this.posn.x, this.posn.y));
+  }
 }
